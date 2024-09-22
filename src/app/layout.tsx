@@ -6,6 +6,7 @@ import { Inter } from "next/font/google";
 export const metadata: Metadata = {
   title: "Open Layers with OSM",
   description: "Open Layers with OSM",
+  manifest: "/manifest.json",
 };
 
 const inter = Inter({ subsets: ["latin"] });
