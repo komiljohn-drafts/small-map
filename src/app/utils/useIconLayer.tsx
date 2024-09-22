@@ -8,34 +8,43 @@ import Icon from "ol/style/Icon";
 import Style from "ol/style/Style";
 import { useEffect, useState } from "react";
 
-import sampleData from "./sampleData";
+import { IPopupData } from "@/store/usePopupData";
+import { STORAGE_KEY_POINTS, storageUtils } from "@/utils/storage";
+
+import points, { IPoint } from "./sampleData";
 
 export default function useIconLayer() {
+  const { getItem } = storageUtils;
+  const storedPoints = (getItem(STORAGE_KEY_POINTS) ?? points) as IPoint[];
+
   const [vectorLayer, setVectorLayer] = useState<VectorLayer<VectorSource<Feature<Point>>, Feature<Point>>>();
   const [vectorSource, setVectorSource] = useState<VectorSource<Feature<Point>>>();
 
   const OK_COLOR = "#4F75FF";
   const WARNING_COLOR = "#EE66A6";
 
-  useEffect(() => {
-    const iconFeatures = sampleData.coordinates.map((coord) => {
-      const feature = new Feature({
-        geometry: new Point(fromLonLat([coord.latitude, coord.longitude])),
-        comment: coord.details,
-        status: coord.status,
-      });
+  // Create the icon style using an SVG encoded as a data URL
+  const getEncodedSvg = (status: boolean) =>
+    `data:image/svg+xml;utf8,${encodeURIComponent(getIcon(status ? OK_COLOR : WARNING_COLOR))}`;
 
-      // Create the icon style using an SVG encoded as a data URL
-      const svgIcon = `data:image/svg+xml;utf8,${encodeURIComponent(getIcon(coord.status ? OK_COLOR : WARNING_COLOR))}`;
+  useEffect(() => {
+    const iconFeatures = storedPoints.map((point) => {
+      const feature = new Feature({
+        geometry: new Point(fromLonLat([point.latitude, point.longitude])),
+        id: point.id,
+        details: point.details,
+        status: point.status,
+      });
 
       feature.setStyle(
         new Style({
           image: new Icon({
-            src: svgIcon,
+            src: getEncodedSvg(point.status),
             scale: 1.2,
           }),
         })
       );
+      feature.setId(String(point.id));
       return feature;
     });
 
@@ -51,7 +60,23 @@ export default function useIconLayer() {
     setVectorLayer(vectorLayer);
   }, []);
 
-  return { vectorSource, vectorLayer };
+  // Update the marker style dynamically based on the updated point data
+  const updateMarkerStyle = (point: IPopupData) => {
+    const feature = vectorSource?.getFeatureById(String(point.id));
+
+    if (feature) {
+      feature.setStyle(
+        new Style({
+          image: new Icon({
+            src: getEncodedSvg(!!point.status),
+            scale: 1.2,
+          }),
+        })
+      );
+    }
+  };
+
+  return { vectorSource, vectorLayer, updateMarkerStyle };
 }
 
 function getIcon(color: ColorLike) {
@@ -63,7 +88,6 @@ function getIcon(color: ColorLike) {
     width="25"
     height="25"
     viewBox="0 0 64 64"
-    tabIndex=""
     enable-background="new 0 0 64 64"
     xmlSpace="preserve"
     style="fill: ${color}; stroke: 1px solid #fff"
