@@ -68,7 +68,7 @@ export default function CustomMap() {
 
   useEffect(() => {
     map?.on("click", function (e) {
-      popupOverlay?.setPosition(undefined);
+      // popupOverlay?.setPosition(undefined);
       if (popupOverlay)
         map.forEachFeatureAtPixel(e.pixel, (feature) => {
           if (popupOverlay.getPosition() && popupData.id === feature.get("id")) {

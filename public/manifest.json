@@ -1,8 +1,8 @@
 {
   "id": "any_id",
-  "name": "Next.js PWA - Tutorial",
-  "short_name": "Next PWA",
-  "description": "This next.js app is a PWA.",
+  "name": "Simple map",
+  "short_name": "Simple map",
+  "description": "Openlayers with Open Street Map",
   "icons": [
     {
       "src": "./logo72x72.png",
