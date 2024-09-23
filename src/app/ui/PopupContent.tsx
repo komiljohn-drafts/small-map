@@ -3,20 +3,19 @@ import { Overlay } from "ol";
 import React, { ChangeEventHandler, RefObject } from "react";
 import ReactSwitch from "react-switch";
 
-import usePopupData from "@/store/usePopupData";
+import usePopupData, { IPopupData } from "@/store/usePopupData";
 import { STORAGE_KEY_POINTS, storageUtils } from "@/utils/storage";
 
 import points from "../utils/sampleData";
-import useIconLayer from "../utils/useIconLayer";
 
 interface Props {
   popupRef: RefObject<HTMLDivElement>;
   popupOverlay?: Overlay;
+  updateMarkerStyle: (point: IPopupData) => void;
 }
 
-export default function PopupContent({ popupRef, popupOverlay }: Props) {
+export default function PopupContent({ popupRef, popupOverlay, updateMarkerStyle }: Props) {
   const { popupData, setPopupData } = usePopupData();
-  const { updateMarkerStyle } = useIconLayer();
 
   const { setItem } = storageUtils;
 

@@ -20,7 +20,7 @@ export default function CustomMap() {
   const storedPoints = (getItem(STORAGE_KEY_POINTS) ?? points) as IPoint[];
 
   const { popupData, setPopupData } = usePopupData();
-  const { vectorLayer, vectorSource } = useIconLayer();
+  const { vectorLayer, vectorSource, updateMarkerStyle } = useIconLayer();
 
   const mapRef = useRef<HTMLDivElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
@@ -104,7 +104,7 @@ export default function CustomMap() {
           />
         ))}
       </div>
-      <PopupContent popupOverlay={popupOverlay} popupRef={popupRef} />
+      <PopupContent updateMarkerStyle={updateMarkerStyle} popupOverlay={popupOverlay} popupRef={popupRef} />
     </div>
   );
 }
