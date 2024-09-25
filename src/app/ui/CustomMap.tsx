@@ -66,22 +66,6 @@ export default function CustomMap() {
     return () => map.setTarget();
   }, [vectorLayer, vectorSource]);
 
-  useEffect(() => {
-    map?.on("click", function (e) {
-      // popupOverlay?.setPosition(undefined);
-      if (popupOverlay)
-        map.forEachFeatureAtPixel(e.pixel, (feature) => {
-          if (popupOverlay.getPosition() && popupData.id === feature.get("id")) {
-            popupOverlay.setPosition(undefined);
-            setPopupData(null);
-          } else {
-            setPopupData({ details: feature.get("details"), status: feature.get("status"), id: feature.get("id") });
-            popupOverlay.setPosition(e.coordinate);
-          }
-        });
-    });
-  }, [popupOverlay, popupData]);
-
   const handleMarkerFocus = (coordinates: number[], pointId: number) => {
     const focusedPoint = storedPoints.find((point) => point.id === pointId);
     setPopupData({ details: focusedPoint?.details, status: focusedPoint?.status, id: focusedPoint?.id });
@@ -89,6 +73,23 @@ export default function CustomMap() {
       map.getOverlayById("popup")?.setPosition(fromLonLat(coordinates));
     }
   };
+
+  useEffect(() => {
+    map?.on("click", function (e) {
+      popupOverlay?.setPosition(undefined);
+      if (popupOverlay)
+        map.forEachFeatureAtPixel(e.pixel, (feature) => {
+          if (popupOverlay.getPosition() && popupData.id === feature.get("id")) {
+            popupOverlay.setPosition(undefined);
+            setPopupData(null);
+          } else {
+            const activeItem = storedPoints.find((i) => i.id === feature.get("id"));
+            setPopupData({ ...activeItem });
+            popupOverlay.setPosition(e.coordinate);
+          }
+        });
+    });
+  }, [popupOverlay, popupData]);
 
   return (
     <div>

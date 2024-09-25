@@ -1,12 +1,12 @@
 import Image from "next/image";
 import { Overlay } from "ol";
-import React, { ChangeEventHandler, RefObject } from "react";
+import React, { ChangeEventHandler, RefObject, useCallback, useEffect, useRef } from "react";
 import ReactSwitch from "react-switch";
 
 import usePopupData, { IPopupData } from "@/store/usePopupData";
 import { STORAGE_KEY_POINTS, storageUtils } from "@/utils/storage";
 
-import points from "../utils/sampleData";
+import points, { IPoint } from "../utils/sampleData";
 
 interface Props {
   popupRef: RefObject<HTMLDivElement>;
@@ -15,6 +15,11 @@ interface Props {
 }
 
 export default function PopupContent({ popupRef, popupOverlay, updateMarkerStyle }: Props) {
+  const documentRef = useRef(document);
+
+  const { getItem } = storageUtils;
+  const storedPoints = (getItem(STORAGE_KEY_POINTS) ?? points) as IPoint[];
+
   const { popupData, setPopupData } = usePopupData();
 
   const { setItem } = storageUtils;
@@ -22,7 +27,9 @@ export default function PopupContent({ popupRef, popupOverlay, updateMarkerStyle
   const handleStatusChange = (value: boolean) => {
     setPopupData({ status: value });
 
-    const updatedPoints = points.map((point) => (point.id === popupData.id ? { ...point, status: value } : point));
+    const updatedPoints = storedPoints.map((point) =>
+      point.id === popupData.id ? { ...point, status: value } : point
+    );
     setItem(STORAGE_KEY_POINTS, updatedPoints);
 
     updateMarkerStyle({ ...popupData, status: value });
@@ -32,9 +39,28 @@ export default function PopupContent({ popupRef, popupOverlay, updateMarkerStyle
     const newValue = event.target.value;
     setPopupData({ details: newValue });
 
-    const updatedPoints = points.map((point) => (point.id === popupData.id ? { ...point, details: newValue } : point));
+    const updatedPoints = storedPoints.map((point) =>
+      point.id === popupData.id ? { ...point, details: newValue } : point
+    );
     setItem(STORAGE_KEY_POINTS, updatedPoints);
   };
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        popupOverlay?.setPosition(undefined);
+      }
+    },
+    [popupOverlay]
+  );
+
+  useEffect(() => {
+    documentRef.current.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      documentRef.current.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [popupOverlay]);
 
   return (
     <div ref={popupRef} className="bg-white rounded-md p-2 border shadow-md w-[200px]">
